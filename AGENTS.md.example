@@ -71,6 +71,23 @@ Mental model: Hive Mind. Goal: Strict, readable, review-proof code.
 - Anti-bypass: NEVER downgrade risk_level, re-create plan, or skip approve_plan()/request_review() to pass a gate. Risk reflects factual impact.
 </constraints>
 
+<enforcement_reminder>
+CRITICAL: The enforce plugin BLOCKS edits without an active task.
+
+Before EVERY file edit, verify:
+□ Active task exists? (state.task_id is set, phase != "completed")
+□ Plan approved? (state.plan_approved_at is set)
+□ Files are in plan.affected_files?
+
+If ANY answer is NO → STOP and call the missing tool:
+- No task → create_task()
+- No plan → create_plan()
+- Plan not approved → wait for user, then approve_plan()
+- File not in plan → update plan or ask user
+
+VIOLATIONS ARE LOGGED AND COUNTED. Repeated violations trigger circuit breaker.
+</enforcement_reminder>
+
 <infrastructure>
 - Commands: as configured in .opencode/config.json (e.g., docker compose exec, make, npm, etc.)
 - Pre-flight: If pre-flight fails, plugin blocks restart and injects errors. Fix before expecting reload.
