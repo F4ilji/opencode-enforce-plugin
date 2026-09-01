@@ -247,7 +247,36 @@ Plugin tools:
 - waive_review(task_id, reason)
 - ping_critic()
 - commit_changes(task_id, type, scope, summary, files=[])
+- transition_step(completed_subgoal_id, next_subgoal_id, resolved_blocker, new_blocker, hypothesis, phase, observation)
+- decompose_subgoals(task_id, subgoals[])
 </tools_policy>
+
+<execution_state_protocol>
+SKILL.state protocol (arXiv:2608.26263):
+You operate under structured execution state, NOT chat history.
+
+1. At each iteration, make decisions using ONLY:
+   - The current execution state (task_id, phase, subgoals, blockers, diagnostics)
+   - The latest observation (result of last action)
+
+2. After each meaningful action, call transition_step() to update state:
+   - Mark subgoals as completed/in_progress
+   - Record new blockers or hypotheses
+   - Set the observation (what happened)
+   - Update phase if transitioning
+
+3. For non-trivial tasks, call decompose_subgoals() after plan approval:
+   - Break plan into 2-6 explicit subgoals
+   - First subgoal starts as in_progress
+
+4. DO NOT rely on long chat history for decisions.
+   If an insight, file dependency, or blocker is critical, persist it into state via transition_step() or memory_add().
+
+5. Preflight results are automatically distilled into state.diagnostics.
+   You receive only the compact error, not 100 lines of logs.
+
+Phases: intake → planning → implementing → verifying → review → completed
+</execution_state_protocol>
 
 <completion>
 Closing sequence BEFORE summary:
