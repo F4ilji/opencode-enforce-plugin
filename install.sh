@@ -18,6 +18,11 @@ if [ ! -f "$TARGET_DIR/.opencode/config.json" ]; then
   cp "$SCRIPT_DIR/config.default.json" "$TARGET_DIR/.opencode/config.json"
 fi
 
+# Устанавливаем AGENTS.md если нет
+if [ ! -f "$TARGET_DIR/AGENTS.md" ]; then
+  cp "$SCRIPT_DIR/AGENTS.md.example" "$TARGET_DIR/AGENTS.md"
+fi
+
 # Устанавливаем зависимости
 cd "$TARGET_DIR/.opencode" && npm install --silent
 
