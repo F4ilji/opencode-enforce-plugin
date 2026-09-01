@@ -1,0 +1,9 @@
+{
+  "name": "enforce-plugin",
+  "version": "1.0.0",
+  "description": "Enforce plugin for opencode",
+  "main": "plugins/enforce.js",
+  "dependencies": {
+    "@opencode-ai/plugin": "1.17.10"
+  }
+}

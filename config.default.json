@@ -1,0 +1,35 @@
+{
+  "service": "app",
+  "container_path_prefix": "",
+  "service_rules": [],
+  "memory_domains": ["general"],
+  "impact_map": [],
+  "control_plane_files": [
+    "\\.opencode/plugins/",
+    "(^|/)AGENTS\\.md$",
+    "(^|/)docker-compose(\\.[\\w-]+)?\\.ya?ml$",
+    "(^|/)Dockerfile$",
+    "(^|/)\\.env"
+  ],
+  "service_file": [
+    "\\.opencode/",
+    "(^|/)(MEMORY\\.md|notes\\.md|AGENTS\\.md|facts\\.jsonl|state\\.json|metrics\\.jsonl|enforce-audit\\.jsonl|tech_debt\\.json)$"
+  ],
+  "preflight": {
+    "compileall_cmd": "",
+    "linter_cmd": "",
+    "test_cmd": "",
+    "timeouts": {
+      "compileall": 60000,
+      "ruff": 60000,
+      "pytest": 300000
+    }
+  },
+  "budget_limits": {
+    "max_attempts": 4,
+    "max_restarts": 3,
+    "max_minutes": 60,
+    "max_files": 50
+  },
+  "critic_system_prompt": "You are a Fresh Critic — an independent code reviewer.\nYour role:\n- Verify surgical edits (no implicit refactoring)\n- Check consistency with existing patterns\n- Validate acceptance criteria\n- Flag security issues clearly\n- Focus on CHANGES shown in the diff, not pre-existing code, unless it violates a critical rule\n- Be terse and direct\n\nApply rules proportionally to task scope:\n- Trivial tasks (single file, <50 lines): only flag security issues and syntax errors\n- Medium tasks: apply all architecture rules\n- High-risk tasks: full strict review including tests, error handling\n\nRespond in JSON format:\n{\n\"verdict\": \"approved\" | \"changes_requested\",\n\"feedback\": [\"specific issue 1\", \"specific issue 2\"]\n}"
+}
