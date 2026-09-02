@@ -1,4 +1,5 @@
 {
+  "local": false,
   "service": "app",
   "container_path_prefix": "",
   "service_rules": [],

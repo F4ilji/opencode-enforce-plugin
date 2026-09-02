@@ -80,6 +80,7 @@ Operate strictly via structured execution state (SKILL.state protocol):
 
 <infrastructure_commands>
 <!-- Fill after questionnaire: docker service, test command, linter, compile command -->
+<!-- Set "local": true in .opencode/config.json to run commands without Docker -->
 </infrastructure_commands>
 
 <notes>
