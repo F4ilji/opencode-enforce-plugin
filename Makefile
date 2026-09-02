@@ -1,7 +1,7 @@
 PLUGIN_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 TARGET_DIR ?= .
 
-.PHONY: install uninstall clean help
+.PHONY: install update uninstall clean help
 
 help:
 	@echo "Установка enforce плагина opencode"
@@ -9,6 +9,7 @@ help:
 	@echo "Использование:"
 	@echo "  make install                  - Установить в текущую директорию"
 	@echo "  make install TARGET_DIR=/path - Установить в указанную директорию"
+	@echo "  make update                   - Обновить плагин (не затрагивает config.json и AGENTS.md)"
 	@echo "  make uninstall                - Удалить плагин"
 	@echo "  make clean                    - Удалить плагин и данные сессий"
 
@@ -23,6 +24,15 @@ install:
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
 	@echo "✅ Enforce plugin установлен"
+
+update:
+	@mkdir -p $(TARGET_DIR)/.opencode/plugins
+	@mkdir -p $(TARGET_DIR)/.opencode/lib
+	@cp $(PLUGIN_DIR)plugins/enforce.js $(TARGET_DIR)/.opencode/plugins/
+	@cp -r $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/
+	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
+	@cd $(TARGET_DIR)/.opencode && npm install --silent
+	@echo "✅ Enforce plugin обновлен (config.json и AGENTS.md не затронуты)"
 
 uninstall:
 	@rm -f $(TARGET_DIR)/.opencode/plugins/enforce.js
