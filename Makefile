@@ -14,22 +14,26 @@ help:
 	@echo "  make clean                    - Remove plugin and session data"
 
 install:
+	@command -v npm >/dev/null 2>&1 || { echo "Error: npm not found"; exit 1; }
 	@mkdir -p $(TARGET_DIR)/.opencode/plugins
 	@mkdir -p $(TARGET_DIR)/.opencode/lib
 	@cp $(PLUGIN_DIR)plugins/enforce.js $(TARGET_DIR)/.opencode/plugins/
-	@cp -r $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/
+	@cp -rn $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/ || true
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
 	@test -f $(TARGET_DIR)/.opencode/config.json || cp $(PLUGIN_DIR)config.default.json $(TARGET_DIR)/.opencode/config.json
 	@test -f $(TARGET_DIR)/AGENTS.md || cp $(PLUGIN_DIR)AGENTS.md $(TARGET_DIR)/AGENTS.md
+	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
 	@echo "Enforce-Lite installed"
 
 update:
+	@command -v npm >/dev/null 2>&1 || { echo "Error: npm not found"; exit 1; }
 	@mkdir -p $(TARGET_DIR)/.opencode/plugins
 	@mkdir -p $(TARGET_DIR)/.opencode/lib
 	@cp $(PLUGIN_DIR)plugins/enforce.js $(TARGET_DIR)/.opencode/plugins/
-	@cp -r $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/
+	@cp -rn $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/ || true
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
+	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
 	@echo "Enforce-Lite updated (config.json and AGENTS.md preserved)"
 
