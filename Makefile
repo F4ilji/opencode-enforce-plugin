@@ -22,6 +22,7 @@ install:
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
 	@test -f $(TARGET_DIR)/.opencode/config.json || cp $(PLUGIN_DIR)config.default.json $(TARGET_DIR)/.opencode/config.json
 	@test -f $(TARGET_DIR)/AGENTS.md.example || cp $(PLUGIN_DIR)AGENTS.md.example $(TARGET_DIR)/AGENTS.md.example
+	@test -f $(TARGET_DIR)/AGENTS.md || mv $(TARGET_DIR)/AGENTS.md.example $(TARGET_DIR)/AGENTS.md
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
 	@echo "Enforce-Lite installed"
