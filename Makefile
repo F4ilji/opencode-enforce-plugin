@@ -18,7 +18,8 @@ install:
 	@mkdir -p $(TARGET_DIR)/.opencode/plugins
 	@mkdir -p $(TARGET_DIR)/.opencode/lib
 	@cp $(PLUGIN_DIR)plugins/enforce.js $(TARGET_DIR)/.opencode/plugins/
-	@cp -rn $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/ || true
+	@rm -rf $(TARGET_DIR)/.opencode/lib/enforce
+	@cp -r $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
 	@test -f $(TARGET_DIR)/.opencode/config.json || cp $(PLUGIN_DIR)config.default.json $(TARGET_DIR)/.opencode/config.json
 	@test -f $(TARGET_DIR)/AGENTS.md.example || cp $(PLUGIN_DIR)AGENTS.md.example $(TARGET_DIR)/AGENTS.md.example
@@ -32,7 +33,8 @@ update:
 	@mkdir -p $(TARGET_DIR)/.opencode/plugins
 	@mkdir -p $(TARGET_DIR)/.opencode/lib
 	@cp $(PLUGIN_DIR)plugins/enforce.js $(TARGET_DIR)/.opencode/plugins/
-	@cp -rn $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/ || true
+	@rm -rf $(TARGET_DIR)/.opencode/lib/enforce
+	@cp -r $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
