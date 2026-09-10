@@ -1,56 +1,56 @@
-# Enforce Plugin for OpenCode
+# Enforce-Lite Plugin for OpenCode
 
-Плагин для opencode, который реализует протокол разработки с задачами, планами, ревью и памятью.
+Git-first governance plugin for opencode. Enforces scope, validates changes, and commits atomically.
 
-## Установка
-
-```bash
-cd /path/to/project
-make -f /Users/failj/projects/enforce-plugin/Makefile install
-```
-
-Или через alias (после source ~/.zshrc):
+## Installation
 
 ```bash
 cd /path/to/project
-enforce-install
+make -f /path/to/enforce-plugin/Makefile install
 ```
 
-## Что устанавливается
+## What gets installed
 
-- `.opencode/plugins/enforce.js` — точка входа
-- `.opencode/lib/enforce/` — основная библиотека
-- `.opencode/package.json` — зависимости
-- `.opencode/config.json` — конфигурация (если не существует)
-- `AGENTS.md` — протокол работы agent'а (если не существует)
+- `.opencode/plugins/enforce.js` — entry point
+- `.opencode/lib/enforce/` — core library
+- `.opencode/package.json` — dependencies
+- `.opencode/config.json` — configuration (if not exists)
+- `AGENTS.md` — agent protocol (if not exists)
 
-## Конфигурация
+## Configuration
 
-Отредактируйте `.opencode/config.json` под свой проект:
+Edit `.opencode/config.json` for your project:
 
-- `service` — имя Docker-сервиса
-- `container_path_prefix` — префикс пути в контейнере
-- `service_rules` — правила определения сервисов по путям файлов
-- `memory_domains` — домены памяти
-- `impact_map` — карта рисков файлов
-- `preflight` — команды preflight (compile, lint, test)
-- `budget_limits` — лимиты бюджета
-- `critic_system_prompt` — промпт для Fresh Critic
+- `preflight.compileall_cmd` — compile/syntax check command
+- `preflight.linter_cmd` — linter command (use `{file}` placeholder)
+- `preflight.test_cmd` — test command
+- `preflight.timeouts` — timeout per step in ms
+- `budget_limits` — max attempts, minutes, files per task
+- `control_plane_files` — regex patterns for protected files
+- `critic_system_prompt` — Fresh Critic system prompt
 
-## Использование
+Example for Docker-based projects:
+```json
+{
+  "preflight": {
+    "test_cmd": "docker compose exec -T app pytest",
+    "linter_cmd": "docker compose exec -T app ruff check {file}"
+  }
+}
+```
 
-После установки плагин автоматически загружается при старте opencode. Доступные инструменты:
+## Tools (7 total)
 
-- `create_task()` — создание задач
-- `create_plan()` — создание плана
-- `approve_plan()` — одобрение плана
-- `request_review()` — запрос ревью
-- `complete_task()` — завершение задачи
-- `memory_add()` — добавление в память
-- `get_dashboard()` — дашборд
+- `begin_task(task_id, description, files_whitelist, priority)` — initialize task + baseline SHA
+- `create_plan(task_id, affected_files, risk_level, acceptance_criteria)` — declare scope
+- `approve_plan(task_id)` — human approval gate
+- `validate_changes(task_id)` — preflight + Fresh Critic review
+- `waive_review(task_id, reason)` — operator override
+- `commit_task(task_id, type, scope, summary)` — atomic git commit
+- `abort_task(task_id, reason)` — emergency rollback to baseline
 
-## Удаление
+## Uninstall
 
 ```bash
-make -f /Users/failj/projects/enforce-plugin/Makefile uninstall
+make -f /path/to/enforce-plugin/Makefile uninstall
 ```

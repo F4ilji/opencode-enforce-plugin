@@ -1,10 +1,4 @@
 {
-  "local": false,
-  "service": "app",
-  "container_path_prefix": "",
-  "service_rules": [],
-  "memory_domains": ["general"],
-  "impact_map": [],
   "control_plane_files": [
     "\\.opencode/plugins/",
     "(^|/)AGENTS\\.md$",
@@ -12,23 +6,18 @@
     "(^|/)Dockerfile$",
     "(^|/)\\.env"
   ],
-  "service_file": [
-    "\\.opencode/",
-    "(^|/)(MEMORY\\.md|notes\\.md|AGENTS\\.md|facts\\.jsonl|state\\.json|metrics\\.jsonl|enforce-audit\\.jsonl|tech_debt\\.json)$"
-  ],
   "preflight": {
     "compileall_cmd": "",
     "linter_cmd": "",
     "test_cmd": "",
     "timeouts": {
       "compileall": 60000,
-      "ruff": 60000,
-      "pytest": 300000
+      "linter": 60000,
+      "test": 300000
     }
   },
   "budget_limits": {
     "max_attempts": 4,
-    "max_restarts": 3,
     "max_minutes": 60,
     "max_files": 50
   },
