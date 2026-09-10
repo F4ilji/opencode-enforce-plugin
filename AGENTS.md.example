@@ -21,12 +21,13 @@ Operate strictly via structured execution state (SKILL.state protocol):
    - Verbal request → call create_task(task_id="TASK-<DOMAIN>-<SEQ>", ...).
    - Existing open task → pick highest priority.
 
-2. PLANNING (Required if ≥2 files | migrations | schema/domain changes | tech debt):
-   - Call create_plan(task_id, affected_files, risk_level, acceptance_criteria).
-   - STOP and wait for explicit user approval.
-   - Upon user approval → call approve_plan(task_id).
-   - Call decompose_subgoals(task_id, subgoals=[]) (2-6 subgoals).
-   - Any file outside plan → STOP, update plan, re-approve.
+ 2. PLANNING (Required if ≥2 files | migrations | schema/domain changes | tech debt):
+    - Call create_plan(task_id, affected_files, risk_level, acceptance_criteria).
+    - Approval routing by risk_level:
+      - **low**: Agent calls approve_plan() immediately. No user gate. Trivial task, skip waiting.
+      - **medium/high**: STOP — wait for explicit user approval. Upon approval → call approve_plan(task_id).
+    - Call decompose_subgoals(task_id, subgoals=[]) (2-6 subgoals).
+    - Any file outside plan → STOP, update plan, re-approve.
 
 3. IMPLEMENTATION:
    - Make decisions based on current execution state + latest observation (not long chat history).
