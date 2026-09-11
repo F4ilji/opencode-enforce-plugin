@@ -11,63 +11,74 @@ Goal: Minimal, surgical, review-proof production code.
 - Language: RU for planning/reasoning. EN for code, comments, commit messages.
 - Code Style: Minimal changes. Touch ONLY task-related code. Zero implicit refactoring/formatting.
 - Brevity: Terse responses. Drop pleasantries and filler.
-- Hard Rules: If plugin tool returns error → report verbatim, NEVER claim success. NEVER downgrade risk_level or bypass review/approval gates. Stop and ask if legacy context is ambiguous.
+- Hard Rules: 
+  - If plugin tool returns error → report verbatim, NEVER claim success.
+  - NEVER edit files outside `files_whitelist` established in `begin_task`.
+  - NEVER commit without a passing `validate_changes`.
+  - If unexpected regression occurs → stop or use `abort_task` to return to baseline.
 </constraints>
 
 <fsm_lifecycle>
-Operate strictly via structured execution state (SKILL.state protocol):
+Operate strictly via the Enforce-Lite FSM lifecycle:
 
-1. INTAKE:
-   - Verbal request → call create_task(task_id="TASK-<DOMAIN>-<SEQ>", ...).
-   - Existing open task → pick highest priority.
+1. INTAKE & BASELINE:
+   - Verbal request → call begin_task(task_id="TASK-<DOMAIN>-<SEQ>", description, files_whitelist=[...], priority).
+   - This records baseline HEAD SHA and locks target file scope.
+   - Any edits outside `files_whitelist` are blocked by the pre-execution guard.
 
- 2. PLANNING (Required if ≥2 files | migrations | schema/domain changes | tech debt):
-    - Call create_plan(task_id, affected_files, risk_level, acceptance_criteria).
-    - Approval routing by risk_level:
-      - **low**: Agent calls approve_plan() immediately. No user gate. Trivial task, skip waiting.
-      - **medium/high**: STOP — wait for explicit user approval. Upon approval → call approve_plan(task_id).
-    - Call decompose_subgoals(task_id, subgoals=[]) (2-6 subgoals).
-    - Any file outside plan → STOP, update plan, re-approve.
+2. PLANNING:
+   - Call create_plan(task_id, affected_files, risk_level, acceptance_criteria).
+   - Approval routing by risk_level:
+     - **low**: Auto-approved by plugin. Proceed to implementation immediately.
+     - **medium/high**: STOP — wait for explicit user approval. Once confirmed → call approve_plan(task_id).
 
 3. IMPLEMENTATION:
-   - Make decisions based on current execution state + latest observation (not long chat history).
-   - After each meaningful action → call transition_step(...).
-   - Respect budget limits. If exceeded: STOP, explain, propose task split.
-   - Edits without active task/approved plan are BLOCKED by plugin.
+   - Surgical edits on Host FS via native tools (edit/write/apply_patch).
+   - Touch ONLY files listed in the approved plan / whitelist.
+   - Any file modification resets validation status (`validated: false`).
 
-4. MEMORY GATE:
-   - Call memory_add(task_id=...) ONLY for genuine gotchas/conventions.
-   - Otherwise call memory_no_op(task_id=...).
-   - NEVER edit MEMORY.md directly.
+4. VALIDATION PIPELINE:
+   - Call validate_changes(task_id).
+   - This automatically runs:
+     1. Syntax/compile checks.
+     2. Linter checks on modified files.
+     3. Test suites.
+     4. Fresh Critic (independent RouterAI review of the git diff).
+   - If validation fails or Critic requests changes → fix surgically → call validate_changes(task_id) again.
+   - Emergency bypass (Operator order ONLY): call waive_review(task_id, reason).
 
-5. REVIEW GATE (Medium/High risk tasks):
-   - Call request_review(task_id, ...).
-   - If changes_requested → fix surgically → re-request review.
-   - User explicit override only: waive_review(task_id, reason).
-
-6. COMPLETION:
-   - Call complete_task(task_id, summary). Hard-blocked if steps 4-5 failed.
+5. COMPLETION & COMMIT:
+   - Call commit_task(task_id, type, scope, summary).
+   - Hard-blocked if `validate_changes` has not passed.
+   - Automatically executes atomic `git add` for whitelisted files and creates conventional commit.
+   - In case of critical failure / unrecoverable state: call abort_task(task_id, reason) to roll back to baseline.
 </fsm_lifecycle>
 
 <context_and_memory>
-- Context Router: Identify target domain via grep. Read ONLY related files (≤50 lines/read) + relevant MEMORY.md domain lines.
-- Memory Tiers: notes.md (ephemeral), facts.jsonl (source of truth via memory_add). NEVER edit MEMORY.md directly.
-- Diagnostics: Inspect state with get_dashboard() if stuck or debugging budget.
+- Project Memory: Plain text in this file (`AGENTS.md`) under `<notes>` and `<architecture_rules>`.
+- Learnings & Gotchas: If you discover a critical repository quirk, append it directly to `<notes>` in `AGENTS.md`. No JSONL databases or external memory tools are used.
+- Context Discipline: Grep targeted symbols. Read only related files (≤50 lines/read). Do not dump entire directories into context.
 </context_and_memory>
 
 <git_workflow>
 - Commit format: <type>(<scope>): <summary> [TASK-XXX] (<50 chars, imperative, lowercase).
-- Types: feat, fix, docs, style, refactor, test, chore, perf, ci.
-- Use commit_changes(task_id, type, scope, summary, files) for checkpoints.
-- If state.auto_commit=true, plugin commits upon successful complete_task().
-- NEVER commit .opencode/ artifacts, receipts, or memory files.
+- Allowed Types: feat, fix, docs, style, refactor, test, chore, perf, ci.
+- Atomicity: Do not invoke raw git commit commands manually. Use commit_task() for official protocol checkouts.
+- Git is the Single Source of Truth (SSoT). If lost, run `git status` or `git diff`.
 </git_workflow>
 
 <tools_and_env>
-- Native Tools: read/edit/write/glob/grep (Host FS). NEVER use sed/awk/cat for file editing.
-- Execution: Docker commands only (exec/compose/cp) via config. Direct host package managers are forbidden.
-- Bash: Minimize stdout (e.g., ls -1).
-- Reload: Plugin changes in .opencode/plugins/* require opencode restart.
+- Protocol Tools:
+  1. `begin_task` — Task init & baseline SHA lock.
+  2. `create_plan` — Scope & risk declaration.
+  3. `approve_plan` — Operator approval gate.
+  4. `validate_changes` — Combined preflight & Fresh Critic diff review.
+  5. `waive_review` — Operator override for Fresh Critic.
+  6. `commit_task` — Atomic conventional git commit.
+  7. `abort_task` — Hard rollback to baseline SHA.
+- Pre-execution Guard: File modifications (edit/write/apply_patch) are intercepted BEFORE disk write. No active task = blocked at tool level.
+- Native Tools: read/glob/grep for inspection. Use standard mutation tools (edit/write/apply_patch) for modifications — they are automatically intercepted and governed by the Pre-execution Guard.
+- Preflight Execution: Handled by plugin configuration via generic shell execution (`config.json`).
 </tools_and_env>
 
 <!-- PROJECT-SPECIFIC SECTIONS (Filled by project setup) -->
@@ -85,7 +96,7 @@ Operate strictly via structured execution state (SKILL.state protocol):
 </infrastructure_commands>
 
 <notes>
-- .opencode/enforce-audit.jsonl and .opencode/pending/open/ — add to .gitignore if not present.
-- MEMORY.md — generated view, DO NOT EDIT DIRECTLY. Edit facts.jsonl instead.
-- RouterAI config: ROUTERAI_API_KEY and ROUTERAI_MODEL from environment.
+- Add to .gitignore: .opencode/state.json, .opencode/routerai.env
+- RouterAI config: ROUTERAI_API_KEY and ROUTERAI_MODEL from environment or .opencode/routerai.env.
+- Pre-execution guard blocks file edits without active task. Agent MUST call begin_task() first.
 </notes>
