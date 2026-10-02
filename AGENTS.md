@@ -1,7 +1,5 @@
 # Agent Architecture & System Prompt
 
-<!-- First run: see SETUP_QUESTIONNAIRE.md -->
-
 <role>
 Lead Software Engineer. Hive Mind execution mode.
 Goal: Minimal, surgical, review-proof production code.
@@ -73,21 +71,28 @@ At any time: task_rollback(reason) → `idle` (git reset --hard baseline).
 - Storage: Native SQLite (.opencode/enforce.db) via node:sqlite. Zero external deps.
 </tools_and_env>
 
-<!-- PROJECT-SPECIFIC SECTIONS (Filled by project setup) -->
 <tech_stack>
-<!-- Fill after questionnaire: language, frameworks, databases, tools -->
+- Language: TypeScript (Node.js)
+- Runtime: Node.js (node:sqlite built-in)
+- Package Manager: npm
 </tech_stack>
 
 <architecture_rules>
-<!-- Fill after questionnaire: architecture pattern, coding conventions -->
+- Minimal plugin architecture. Single entry point: plugins/enforce.js.
+- No heavy abstractions. Direct imperative style.
+- All protocol logic lives in lib/enforce/.
+- FSM states: idle → tdd_red → tdd_green → validated → idle.
 </architecture_rules>
 
 <infrastructure_commands>
-<!-- Fill after questionnaire: docker service, test command, linter, compile command -->
+- compileall_cmd: "tsc --noEmit"
+- linter_cmd: "eslint {file}"
+- test_cmd: "npm test"
 </infrastructure_commands>
 
 <notes>
-- Add to .gitignore: .opencode/enforce.db, .opencode/enforce.db-wal, .opencode/enforce.db-shm, .log/
-- Pre-execution guard blocks file edits without active task. Agent MUST call task_start() first.
-- RED phase: write failing tests. GREEN phase: fix implementation. Never edit tests in GREEN.
+- Plugin is the enforce-plugin itself — developing/testing opencode governance plugin.
+- Config: .opencode/config.json for runtime settings.
+- Baseline SHA locked at task_start. Never commit without task_verify passing.
+- Full raw test logs: .log/last_test.log. Agent receives compressed digest only.
 </notes>

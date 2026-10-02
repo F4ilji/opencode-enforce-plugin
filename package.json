@@ -1,8 +1,12 @@
 {
   "name": "enforce-plugin",
-  "version": "1.0.0",
-  "description": "Enforce plugin for opencode",
+  "version": "2.0.0",
+  "description": "Enforce-TDD plugin for opencode",
+  "type": "module",
   "main": "plugins/enforce.js",
+  "scripts": {
+    "test": "node --test tests/"
+  },
   "dependencies": {
     "@opencode-ai/plugin": "1.17.10"
   }
