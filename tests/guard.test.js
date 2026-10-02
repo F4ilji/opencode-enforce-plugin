@@ -87,3 +87,40 @@ test("idle phase blocks all mutations", () => {
     /нет активной задачи/i,
   );
 });
+
+test("apply_patch multi-file: blocks if ANY file violates phase rules", () => {
+  seedState("tdd_green");
+  const patch = `*** Begin Patch
+*** Update File: src/impl.js
++ok
+*** Update File: tests/impl.test.js
++cheat
+*** End Patch`;
+  assert.throws(
+    () => enforcePreExecutionPolicy("apply_patch", { patchText: patch }, dir, db),
+    /TEST_LOCK_VIOLATION/,
+  );
+});
+
+test("apply_patch multi-file: blocks out-of-scope file even if first is ok", () => {
+  seedState("tdd_green");
+  const patch = `*** Begin Patch
+*** Update File: src/impl.js
++ok
+*** Update File: src/other.js
++scope creep
+*** End Patch`;
+  assert.throws(
+    () => enforcePreExecutionPolicy("apply_patch", { patchText: patch }, dir, db),
+    /SCOPE_CREEP/,
+  );
+});
+
+test("apply_patch multi-file: allows when all files are permitted", () => {
+  seedState("tdd_green");
+  const patch = `*** Begin Patch
+*** Update File: src/impl.js
++ok
+*** End Patch`;
+  enforcePreExecutionPolicy("apply_patch", { patchText: patch }, dir, db);
+});
