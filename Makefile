@@ -52,7 +52,6 @@ uninstall:
 	@echo "Enforce-TDD V2 removed"
 
 clean: uninstall
-	@rm -f $(TARGET_DIR)/.opencode/state.json
 	@rm -f $(TARGET_DIR)/.opencode/enforce.db $(TARGET_DIR)/.opencode/enforce.db-wal $(TARGET_DIR)/.opencode/enforce.db-shm
 	@rm -rf $(TARGET_DIR)/.log
 	@echo "Session data cleaned"
