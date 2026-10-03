@@ -60,3 +60,10 @@ test("index.js wires db and 4 tools", () => {
   assert.ok(src.includes("task_start"));
   assert.ok(!src.includes("loadRouterConfig"));
 });
+
+test("git.js filters gitignored files in gitAdd", () => {
+  const src = read("lib/enforce/services/git.js");
+  assert.ok(src.includes("check-ignore"));
+  assert.ok(src.includes("ignoredFiles"));
+  assert.ok(src.includes("stageableFiles"));
+});
