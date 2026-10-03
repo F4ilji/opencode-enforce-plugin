@@ -25,6 +25,9 @@ install:
 	@test -f $(TARGET_DIR)/AGENTS.md.example || cp $(PLUGIN_DIR)AGENTS.md.example $(TARGET_DIR)/AGENTS.md.example
 	@test -f $(TARGET_DIR)/AGENTS.md || mv $(TARGET_DIR)/AGENTS.md.example $(TARGET_DIR)/AGENTS.md
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
+	@touch $(TARGET_DIR)/.gitignore
+	@grep -qxF '.opencode/' $(TARGET_DIR)/.gitignore 2>/dev/null || echo '.opencode/' >> $(TARGET_DIR)/.gitignore
+	@grep -qxF '.log/' $(TARGET_DIR)/.gitignore 2>/dev/null || echo '.log/' >> $(TARGET_DIR)/.gitignore
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
 	@echo "Enforce-TDD V2 installed"
 
@@ -37,6 +40,9 @@ update:
 	@cp -r $(PLUGIN_DIR)lib/enforce $(TARGET_DIR)/.opencode/lib/
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
+	@touch $(TARGET_DIR)/.gitignore
+	@grep -qxF '.opencode/' $(TARGET_DIR)/.gitignore 2>/dev/null || echo '.opencode/' >> $(TARGET_DIR)/.gitignore
+	@grep -qxF '.log/' $(TARGET_DIR)/.gitignore 2>/dev/null || echo '.log/' >> $(TARGET_DIR)/.gitignore
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
 	@echo "Enforce-TDD V2 updated (config.json and AGENTS.md preserved)"
 
