@@ -4,7 +4,7 @@ TARGET_DIR ?= .
 .PHONY: install update uninstall clean help
 
 help:
-	@echo "Enforce-Lite plugin for opencode"
+	@echo "Enforce-TDD V2 plugin for opencode"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make install                  - Install to current directory"
@@ -26,7 +26,7 @@ install:
 	@test -f $(TARGET_DIR)/AGENTS.md || mv $(TARGET_DIR)/AGENTS.md.example $(TARGET_DIR)/AGENTS.md
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
-	@echo "Enforce-Lite installed"
+	@echo "Enforce-TDD V2 installed"
 
 update:
 	@command -v npm >/dev/null 2>&1 || { echo "Error: npm not found"; exit 1; }
@@ -38,13 +38,15 @@ update:
 	@cp $(PLUGIN_DIR)package.json $(TARGET_DIR)/.opencode/
 	@test -f $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md || cp $(PLUGIN_DIR)SETUP_QUESTIONNAIRE.md $(TARGET_DIR)/SETUP_QUESTIONNAIRE.md
 	@cd $(TARGET_DIR)/.opencode && npm install --silent
-	@echo "Enforce-Lite updated (config.json and AGENTS.md preserved)"
+	@echo "Enforce-TDD V2 updated (config.json and AGENTS.md preserved)"
 
 uninstall:
 	@rm -f $(TARGET_DIR)/.opencode/plugins/enforce.js
 	@rm -rf $(TARGET_DIR)/.opencode/lib/enforce
-	@echo "Enforce-Lite removed"
+	@echo "Enforce-TDD V2 removed"
 
 clean: uninstall
 	@rm -f $(TARGET_DIR)/.opencode/state.json
+	@rm -f $(TARGET_DIR)/.opencode/enforce.db $(TARGET_DIR)/.opencode/enforce.db-wal $(TARGET_DIR)/.opencode/enforce.db-shm
+	@rm -rf $(TARGET_DIR)/.log
 	@echo "Session data cleaned"
