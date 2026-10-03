@@ -88,6 +88,19 @@ test("idle phase blocks all mutations", () => {
   );
 });
 
+test("implementing phase allows whitelist edits", () => {
+  seedState("implementing");
+  enforcePreExecutionPolicy("edit", { filePath: "src/impl.js" }, dir, db);
+});
+
+test("implementing phase blocks out-of-scope files", () => {
+  seedState("implementing");
+  assert.throws(
+    () => enforcePreExecutionPolicy("edit", { filePath: "src/other.js" }, dir, db),
+    /SCOPE_CREEP/,
+  );
+});
+
 test("apply_patch multi-file: blocks if ANY file violates phase rules", () => {
   seedState("tdd_green");
   const patch = `*** Begin Patch

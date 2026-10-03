@@ -19,33 +19,32 @@ Goal: Minimal, surgical, review-proof production code.
 </constraints>
 
 <fsm_lifecycle>
-Operate strictly via the Enforce-TDD V2 FSM:
+Operate strictly via the Dual-Track Enforce-TDD V2 FSM:
 
-1. TASK START:
-   - Call task_start(task_id, files_whitelist, test_files, description).
-   - Plugin locks baseline HEAD SHA, enters phase `tdd_red`.
+**MODE SELECTION (at task_start):**
+| Change type | Mode | test_files |
+|-------------|------|------------|
+| Business logic, utilities, calculations | TDD Mode | REQUIRED |
+| Bug fixes (any) | TDD Mode | REQUIRED (repro test) |
+| CSS, HTML, Tailwind styles | Direct Mode | `[]` |
+| Configs (.ini, .env.example, .yaml) | Direct Mode | `[]` |
+| Docs, texts, translations | Direct Mode | `[]` |
 
-2. RED PHASE:
-   - Write FAILING tests ONLY in `test_files`.
-   - Implementation files are BLOCKED (TDD_RED_VIOLATION).
-   - Call task_verify(). Expect AssertionError failure.
-   - On success: phase → `tdd_green`. Tests LOCKED on write.
+**TDD TRACK (test_files provided):**
 
-3. GREEN PHASE:
-   - Write implementation ONLY in `files_whitelist`.
-   - Test files are BLOCKED (TEST_LOCK_VIOLATION).
-   - Call task_verify() until Exit Code 0.
-   - On success: phase → `validated`.
+1. TASK START: task_start(task_id, files_whitelist, test_files, description) → phase `tdd_red`.
+2. RED: Write FAILING tests ONLY in test_files. Impl files BLOCKED (TDD_RED_VIOLATION). Call task_verify(). Expect AssertionError. Phase → `tdd_green`. Tests LOCKED.
+3. GREEN: Write implementation ONLY in files_whitelist. Test files BLOCKED (TEST_LOCK_VIOLATION). Call task_verify() until Exit 0. Phase → `validated`.
+4. HUMAN REVIEW: Show diff. Wait for "commit".
+5. COMMIT: task_commit(type, scope, summary). Phase → `idle`.
 
-4. HUMAN REVIEW:
-   - Show changes to user in chat.
-   - User reviews Git Diff in IDE.
-   - Wait for explicit "commit" confirmation.
+**DIRECT TRACK (test_files empty/omitted):**
 
-5. COMMIT:
-   - Call task_commit(type, scope, summary).
-   - Hard-blocked unless phase == `validated`.
-   - FSM resets to `idle`.
+1. TASK START: task_start(task_id, files_whitelist, [], description) → phase `implementing`.
+2. EDIT: Modify whitelist files directly. No test writing required.
+3. VERIFY: task_verify() runs full regression suite (compile+lint+tests). Exit 0 → `validated`.
+4. HUMAN REVIEW: Show diff. Wait for "commit".
+5. COMMIT: task_commit(type, scope, summary). Phase → `idle`.
 
 At any time: task_rollback(reason) → `idle` (git reset --hard baseline).
 </fsm_lifecycle>
@@ -65,11 +64,11 @@ At any time: task_rollback(reason) → `idle` (git reset --hard baseline).
 
 <tools_and_env>
 - Protocol Tools (4):
-  1. `task_start(task_id, files_whitelist, test_files, description)` — Init TDD task, enter tdd_red.
-  2. `task_verify()` — Run linter+tests. RED→GREEN or GREEN→validated.
+  1. `task_start(task_id, files_whitelist, test_files?, description)` — Init task. TDD Mode if test_files provided, Direct Mode if empty.
+  2. `task_verify()` — Run linter+tests. TDD: RED→GREEN→validated. Direct: implementing→validated.
   3. `task_commit(type, scope, summary)` — Atomic commit, requires validated.
   4. `task_rollback(reason)` — Hard reset to baseline_sha.
-- Pre-execution Guard: Mutating tools (edit/write/apply_patch) intercepted. RED: only test_files writable. GREEN/VALIDATED: only files_whitelist writable, tests locked.
+- Pre-execution Guard: Mutating tools intercepted. RED: only test_files. GREEN/VALIDATED: only whitelist, tests locked. Implementing: only whitelist.
 - Storage: Native SQLite (.opencode/enforce.db) via node:sqlite. Zero external deps.
 </tools_and_env>
 
